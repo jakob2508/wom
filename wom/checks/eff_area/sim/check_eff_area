@@ -1,0 +1,7 @@
+eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.2.1/setup.sh`
+mkdir -p ./logs
+num_part=1E6 #number of photons 
+fla_zen=0.2  #flasher zenith correction
+fla_wid=1E-3 #opening angle of flasher beam
+fla_azi=0    #flasher azimuthal angle
+BFRM=2 FZCR=$fla_zen FWID=$fla_wid FLDR=$fla_azi+\(1-1\)*360 ./ppc 1 1 $num_part 0 > ./logs/log_eff_area 2>&1

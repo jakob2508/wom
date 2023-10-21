@@ -1,0 +1,26 @@
+eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.2.1/setup.sh`
+mkdir -p ./logs
+export y_fla=0 #flasher y position
+fla_zen_cor=-0.2 #flasher zenith angle correction
+x_wom=1 #x position of WOM tube
+z_wom=-2300 #z position of WOM tube
+d=1 #distance of light source
+r_beam=0.38 #1 sigma beam width (wom height/2) of light source at distance d
+r_wom=0.057 #radius of wom
+num_part=1E8 #number of photons
+#for theta in {45,135}
+for theta in {10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170} 
+#for theta in {95,105,115,125,135,145,155,165,175}
+do 
+       fla_zen=$(python -c "print($theta-90+$fla_zen_cor)")
+       dx=$(python -c "import numpy as np; print(np.cos(($fla_zen-$fla_zen_cor)*np.pi/180)*($d))")
+       dz=$(python -c "import numpy as np; print(np.sin(($fla_zen-$fla_zen_cor)*np.pi/180)*($d))")
+       x_fla=$(python -c "print($x_wom-$r_wom-$dx)")
+       z_fla=$(python -c "print($z_wom-$dz)")
+       opening_angle=$(python -c "import numpy as np; print(2*np.arctan($r_beam/$d)*180/np.pi)")
+       export x_fla
+       export z_fla
+       echo "Flasher desplacement x_fla, z_fla: $x_fla m $z_fla m, launch angle: $fla_zen deg, theta angle: $theta deg"
+       envsubst <geo-f2k-loop > geo-f2k
+       BFRM=2 FZCR=$fla_zen FWID=$opening_angle FLDR=$[0+(1-1)*360] ./ppc 1 1 $num_part 0 > ./logs/log_theta=$theta.txt 2>&1
+done
